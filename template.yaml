@@ -1,29 +1,29 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  notionrandomthought
+  notionrecurringtasks
 
-  Sample SAM Template for notionrandomthought
+  Sample SAM Template for notionrecurringtasks
 
 Globals:
   Function:
     Environment:
       Variables:
         SECRET_REGION: eu-west-2
-        SECRET_ARN: arn:aws:secretsmanager:eu-west-2:461792260104:secret:prod/notionrandomthoughts/integration-cvQCpV
+        SECRET_ARN: arn:aws:secretsmanager:eu-west-2:461792260104:secret:prod/notionrecurringtasks/integration-kdOcU4
 
 Resources:
-  NotionRandomThoughtFunction:
+  NotionRecurringTasksFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: random-thought/
+      CodeUri: recurring-tasks/
       Handler: entry.lambdaHandler
       Runtime: nodejs16.x
       Architectures:
         - x86_64
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
-            SecretArn: 'arn:aws:secretsmanager:eu-west-2:461792260104:secret:prod/notionrandomthoughts/integration-cvQCpV'
+            SecretArn: 'arn:aws:secretsmanager:eu-west-2:461792260104:secret:prod/notionrecurringtasks/integration-kdOcU4'
       Events:
         CloudWatchEvent:
           Type: Schedule
@@ -31,8 +31,3 @@ Resources:
             Schedule: cron(0 1 * * ? *)
       MemorySize: 128
       Timeout: 100
-      Environment:
-        Variables:
-          NOTION_DATABASE_DESTINATION: 54cd91e7-0d7c-4d3d-aefb-8c39c2e7d152
-          NUMBER_RESURFACED_ENTRIES: 5
-          WEEKS_UNTIL_FORGOTTEN: 4
