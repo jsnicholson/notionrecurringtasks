@@ -29,7 +29,7 @@ async function Main(envContext) {
     const allAvailableDb = await FindAllAvailableDb.run(appContext);
     const allRecurringTasks = await FetchAllCompletedRecurringTasks.run(appContext, allAvailableDb);
     const modifiedTasks = ModifyRecurringTasks.run(appContext, allRecurringTasks);
-    await PushRecurringTasks(appContext, modifiedTasks);
+    await PushRecurringTasks.run(appContext, modifiedTasks);
 }
 
 async function GetNotionApiKey() {

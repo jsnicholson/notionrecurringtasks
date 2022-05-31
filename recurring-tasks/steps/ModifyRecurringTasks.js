@@ -8,50 +8,44 @@ function run(_appContext, allTasks) {
     let modifiedTasks = [];
     const currentDate = moment();
     for(const task of allTasks) {
-        let patch = { properties:{} };
-        patch = MarkTaskAsNotComplete(patch);
-        if((temp = AdvanceTaskDueDateStartByInterval(patch, currentDate)) != undefined) patch = temp;
-        if((temp = AdvanceTaskDueDateEndByInterval(patch, currentDate)) != undefined) patch = temp;
-        patch = AdvanceTaskDueDateStartByInterval(patch, currentDate);
-        patch = AdvanceTaskDueDateEndByInterval(patch, currentDate);
+        let props = {};
+        props = { ...props, ...MarkTaskAsNotComplete() };
+        if(task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.start != undefined) 
+            props = { ...props, ...AdvanceTaskDueDateStartByInterval(task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.start, currentDate, task.properties[appContext.globals.INTERVAL_PROPERTY_NAME].select.name) };
+        if(task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.end != undefined)
+            props = { ...props, ...AdvanceTaskDueDateEndByInterval(task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.end, currentDate, task.properties[appContext.globals.INTERVAL_PROPERTY_NAME].select.name) };
         modifiedTasks.push({
             pageId:task.id,
-            patch:patch
+            properties:props
         });
-        console.log(JSON.stringify(patch));
     }
     return modifiedTasks;
 }
 
-function MarkTaskAsNotComplete(task) {
-    return task.properties[appContext.globals.COMPLETED_PROPERTY_NAME] = { checkbox:false };
+function MarkTaskAsNotComplete() {
+    let prop = {};
+    prop[appContext.globals.COMPLETED_PROPERTY_NAME] = { checkbox:false };
+    return prop;
 }
 
-function AdvanceTaskDueDateStartByInterval(task, currentDate) {
-    console.log("");
-    let dueStartDate = task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.start ?
-        moment.parseZone(task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.start) :
-        null;
-    if(!(task.properties[appContext.globals.INTERVAL_PROPERTY_NAME].select.name in appContext.globals.INTERVALS)) return undefined;
+function AdvanceTaskDueDateStartByInterval(dateStart, currentDate, interval) {
+    if(!dateStart || dateStart == undefined || dateStart == null) return undefined;
+    let parsedDate = moment.parseZone(dateStart);
     do {
-        dueStartDate.add(...appContext.globals.INTERVALS[appContext.globals.INTERVAL_PROPERTY_NAME].select.name);
-    } while (currentDate > dueStartDate);
-    let dueStartDateFormat = DATE_TIME_REGEX.test(task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.start) ? "YYYY-MM-DDtHH:mm:ss.SSSZ" : "YYYY-MM-DD";
-    task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.start = dueStartDate.format(dueStartDateFormat);
-    return task;
+        parsedDate.add(...appContext.globals.INTERVALS[interval]);
+    } while (currentDate > parsedDate);
+    let format = DATE_TIME_REGEX.test(dateStart) ? "YYYY-MM-DDTHH:mm:ss.SSSZ" : "YYYY-MM-DD";
+    return JSON.parse(`{"${appContext.globals.DUE_DATE_PROPERTY_NAME}":{"date":{"start":"${parsedDate.format(format)}"}}}`);
 }
 
-function AdvanceTaskDueDateEndByInterval(task, currentDate) {
-    if(!task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.end) return undefined;
-    let dueEndDate = task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.end ?
-        moment.parseZone(task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.end) :
-        null;
+function AdvanceTaskDueDateEndByInterval(dateEnd, currentDate, interval) {
+    if(!dateEnd || dateEnd == undefined || dateEnd == null) return undefined;
+    let parsedDate = moment.parseZone(dateEnd);
     do {
-        dueEndDate.add(...appContext.globals.INTERVALS[appContext.globals.INTERVAL_PROPERTY_NAME].select.name);
-    } while (currentDate > dueEndDate);
-    let dueEndDateFormat = DATE_TIME_REGEX.test(task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.end) ? "YYYY-MM-DDtHH:mm:ss.SSSZ" : "YYYY-MM-DD";
-    task.properties[appContext.globals.DUE_DATE_PROPERTY_NAME].date.end = dueEndDate.format(dueEndDateFormat);
-    return task;
+        parsedDate.add(...appContext.globals.INTERVALS[interval]);
+    } while (currentDate > parsedDate);
+    let format = DATE_TIME_REGEX.test(dateStart) ? "YYYY-MM-DDTHH:mm:ss.SSSZ" : "YYYY-MM-DD";
+    return JSON.parse(`{"${appContext.globals.DUE_DATE_PROPERTY_NAME}":{"date":{"end":"${parsedDate.format(format)}"}}}`);
 }
 
 module.exports = {run};
