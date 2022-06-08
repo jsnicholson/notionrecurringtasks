@@ -1,10 +1,8 @@
-# notionrandomthought
-This is an integration for the note-taking and management app 'Notion'. It pulls random entries from a number of data sources so that it can 'resurface' forgotten notes
+# notionrecurringtasks
+This is an integration for the note-taking and management app 'Notion'. It provides recurring task functionality by altering databases on a regular schedule
 ## what does it use?
 notionrandomthought is runs on AWS Lambda and is scheduled by AWS CloudWatch events. It is build on top of AWS SAM(Serverless Application Model) which also handles deployment. The function itself is written in Node.js
 ## how does it work?
-A number of databases are shared from Notion to this integration, one of which is marked as the destination database. When scheduled events are received, all items that havent been edited for a month are returned. 5 of these items are randomly selected. Simple items are built that reference the original item. These simple items are pushed to the destination database which is viewed on my Notion dashboard
+An actions database is shared with this integration that contains discrete tasks. Each is marked done or not with a checkbox and each can be marked with a number of recurrence intervals. When a scheduled event is received, this integration fetches all actions that have an interval, increments their due date by their interval and unchecks its completed box. All altered actions are then updated in their original location
 ## why does it work like this?
-From the explanation above, you can probably see that it is a little strange how this integration functions. This is down to limitations in Notion's database system. Databases can sit anywhere in a Notion workspace and then multiple views can exist into that database, each with different filters and sorts. These views however can only use a single data source. For my note resurfacing, the types of data I want to show are scattered across multiple databases hence they needed to be unified. This is why a single destination database exists that only hold simple items that reference the originals.
-## other features
-I figured that there would be some items that despite being in the databases I want to resurface, I may not want to show up again. Whilst I could filter data by having a "show this again?" on each source database, this makes maintenance and adding new sources a bit more difficult. Therefore, only the destination database holds this information. Not all entries in the destination database are removed each day to make way for some newly resurfaced thoughts. Any that have been marked as "do not show again" are held and compared against incoming random thoughts so that they cant be shown again.
+Unfortunately Notion does not provide recurring task functionality. There are methods in app to replicate this but they are all clunky from a useability perspective
